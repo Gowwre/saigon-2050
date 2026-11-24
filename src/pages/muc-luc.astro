@@ -1,0 +1,60 @@
+---
+import Base from '../layouts/Base.astro';
+import { sections } from '../data/site';
+---
+
+<Base
+  title="Mục lục — Quy hoạch TP.HCM 2050"
+  description="Mục lục 13 trang của bản đọc Quy hoạch tổng thể TP.HCM 2025–2050: ba câu hỏi, năm địa điểm, một góc nhìn và bốn công cụ đọc bản vẽ."
+>
+  <p class="q">MỤC LỤC · 13 TRANG</p>
+  <h1 class="answer">Đọc gì trước?</h1>
+  <p class="lede">
+    Bản đọc này có ba câu hỏi về đời sống, năm địa điểm trong mô hình, một góc nhìn phối
+    cảnh và bốn công cụ để tra bản vẽ. Không cần đọc theo thứ tự — nhưng nếu bạn mới bắt
+    đầu, ba câu hỏi là chỗ dễ vào nhất.
+  </p>
+
+  <div class="start">
+    <p class="start-label">BẮT ĐẦU NHANH</p>
+    <p>
+      Đọc ba câu hỏi trước, rồi mở <a href="/tra-cuu/">tra cứu điểm</a> để chọn một chỗ
+      trên bản vẽ. Nếu bạn chỉ có một phút: <a href="/ban-do/">bản đồ năm cực</a> cho thấy
+      mô hình tổng thể nằm ở đâu.
+    </p>
+  </div>
+
+  {
+    sections.map((section) => (
+      <section class="index-section" id={section.id}>
+        <h2>
+          {section.label}
+          <span class="count">{String(section.items.length).padStart(2, '0')}</span>
+        </h2>
+        <p class="index-note">{section.note}</p>
+        <ul class="index-list">
+          {section.items.map((item) => (
+            <li>
+              <a href={item.href}>
+                <span class="ilabel">{item.label}</span>
+                <span class="iblurb">{item.blurb}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  <p class="helper">
+    Mỗi trang đều có nguồn bản vẽ ở cuối. Đây là bản thử nghiệm đọc từ hồ sơ chưa đóng dấu;
+    xem <a href="/chu-giai/">chú giải</a> để hiểu quy ước màu và nét.
+  </p>
+
+  <Fragment slot="source">
+    <p>
+      Mục lục các trang của bản đọc Quy hoạch tổng thể TP.HCM 2025–2050, tầm nhìn 100 năm
+      (bản nháp, chưa đóng dấu).
+    </p>
+  </Fragment>
+</Base>

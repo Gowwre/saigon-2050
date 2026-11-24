@@ -1,0 +1,602 @@
+---
+import Base from '../layouts/Base.astro';
+import plan from '../data/plan.json';
+---
+
+<Base
+  title="Tra cứu điểm — Quy hoạch TP.HCM 2050"
+  description="Chọn một điểm trên bản đồ: xem nhóm đất theo bản vẽ sử dụng đất và tuyến đường quy hoạch gần nhất theo bản vẽ giao thông. Sai số khoảng 250 m."
+>
+  <Fragment slot="head">
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
+  </Fragment>
+
+  <p class="q">CÔNG CỤ · TRA CỨU ĐIỂM</p>
+  <h1 class="answer">Quy hoạch nói gì ở điểm này?</h1>
+  <p class="lede">
+    Chọn một điểm trên bản đồ. Trang chiếu điểm đó xuống bốn bản vẽ của hồ sơ: sử dụng đất
+    (15) để đọc nhóm đất, giao thông đường bộ (07) để tìm tuyến gần nhất, và hai bản vẽ
+    thoát nước (12, 13) để bạn tự xem. Sai số khoảng 250 m — cấp vùng, không phải thửa đất.
+  </p>
+
+  <noscript>
+    <style>#lookup-app { display: none; }</style>
+    <p class="map-error">
+      Công cụ tra cứu cần JavaScript để chiếu điểm lên bản vẽ. Bạn vẫn có thể đọc
+      <a href="/ban-do/">bản đồ năm cực</a> hoặc mở <a href="/muc-luc/">mục lục</a>.
+    </p>
+  </noscript>
+
+  <div id="lookup-app">
+  <p class="samples-label">CHỌN NHANH MỘT ĐIỂM</p>
+  <div class="samples" role="group" aria-label="Chọn nhanh một điểm mẫu">
+    <button type="button" class="sample" data-lat="10.7725" data-lon="106.6980">Bến Thành</button>
+    <button type="button" class="sample" data-lat="10.8494" data-lon="106.7531">Thủ Đức</button>
+    <button type="button" class="sample" data-lat="10.8188" data-lon="106.6519">Tân Sơn Nhất</button>
+    <button type="button" class="sample" data-lat="10.3460" data-lon="107.0843">Vũng Tàu</button>
+    <button type="button" class="sample" data-lat="10.4114" data-lon="106.9547">Cần Giờ</button>
+  </div>
+  <p id="map-help" class="sr-only">
+    Bản đồ chọn điểm. Nếu dùng bàn phím, chọn một điểm mẫu ở trên; bản đồ không hỗ trợ
+    chọn điểm bằng bàn phím.
+  </p>
+
+  <div class="map-wrap">
+    <div
+      id="map"
+      class="calib-map"
+      role="region"
+      aria-label="Bản đồ chọn điểm để tra cứu"
+      aria-describedby="map-help"
+    ></div>
+    <p class="map-hint" id="map-hint">Chạm hoặc click để chọn điểm</p>
+  </div>
+  <p class="map-error" id="map-error" role="status" hidden>
+    Không tải được bản đồ nền (OpenStreetMap). Bạn vẫn có thể chọn một điểm mẫu ở trên;
+    bản vẽ vẫn tra được.
+  </p>
+  <p class="map-error" id="sheet-error" role="alert" hidden>
+    Không tải được bản vẽ 15 hoặc 07. Kiểm tra kết nối rồi chọn lại điểm.
+  </p>
+
+  <p id="status" class="sr-only" role="status" aria-live="polite"></p>
+
+  <section id="result" class="meaning" hidden aria-labelledby="cat">
+    <div class="result-head">
+      <h2 id="cat">—</h2>
+      <button type="button" class="btn-ghost" id="clear" hidden>Xoá điểm</button>
+    </div>
+    <p id="note" class="helper"></p>
+
+    <div class="result-grid">
+      <div class="crop">
+        <canvas id="crop" width="600" height="600"></canvas>
+        <p class="helper">Bản vẽ 15 · sử dụng đất</p>
+      </div>
+      <div class="result-meta">
+        <p class="swatch-line">
+          <span id="swatch" class="swatch"></span>
+          <span id="match">Màu tại điểm</span>
+        </p>
+        <details class="tech">
+          <summary>Chi tiết kỹ thuật: màu, pixel, toạ độ</summary>
+          <p class="mono" id="hex"></p>
+          <p class="helper" id="meta"></p>
+        </details>
+      </div>
+    </div>
+
+    <h2 class="sub">Đường trong bán kính 1 km</h2>
+    <div class="road-grid">
+      <div class="crop crop--fixed">
+        <canvas id="crop07" width="600" height="600"></canvas>
+        <p class="helper">
+          Bản vẽ 07 · phóng 4,3× để đọc nét: liền = hiện trạng cải tạo, đứt = quy hoạch
+          xây mới
+        </p>
+        <canvas id="crop07z" width="600" height="600" style="margin-top: 14px"></canvas>
+        <p class="helper">Phóng 10× quanh tuyến gần nhất — chỗ để đọc nét liền hay nét đứt</p>
+      </div>
+      <div class="result-meta">
+        <ul class="map-list" id="roads"></ul>
+        <p class="helper" id="roads-note"></p>
+      </div>
+    </div>
+
+    <h2 class="sub">Hai bản vẽ thoát nước</h2>
+    <div class="drain-grid">
+      <div class="crop">
+        <canvas id="crop12" width="600" height="600"></canvas>
+        <p class="helper">Bản vẽ 12 · cao độ nền và thoát nước mưa</p>
+      </div>
+      <div class="crop">
+        <canvas id="crop13" width="600" height="600"></canvas>
+        <p class="helper">Bản vẽ 13 · thoát nước và xử lý nước thải</p>
+      </div>
+    </div>
+    <p class="helper" id="drain-note"></p>
+  </section>
+  </div>
+
+  <section class="meaning">
+    <h2>Cách đọc kết quả</h2>
+    <p>
+      Màu ở giữa ô vuông là màu của bản vẽ tại điểm bạn chọn; tên nhóm đất là dòng chú
+      giải gần nhất với màu đó. Nếu màu không khớp chú giải (do đường, chữ, viền đè lên),
+      trang sẽ nói “không xác định” thay vì đoán.
+    </p>
+    <p>
+      Phần giao thông đọc màu nét vẽ: xanh là đường cao tốc – vành đai, đỏ là quốc lộ, tím
+      là đường tỉnh hoặc đường cấp đô thị (chú giải bản vẽ 07 dùng chung một màu cho hai
+      loại này). Bản vẽ phân biệt <em>hiện trạng cải tạo</em> (nét liền) và
+      <em>quy hoạch xây mới</em> (nét đứt) bằng nét, không bằng màu — nên ô vuông bên cạnh
+      mới là chỗ để bạn nhìn nét vẽ.
+    </p>
+    <p>
+      Ô đỏ “khu trung tâm thành phố” không có nghĩa là ở đó không có công viên: bản vẽ
+      không vẽ công viên nội đô ở tỉ lệ này. Xem
+      <a href="/cay-xanh/">câu hỏi về cây xanh</a>.
+    </p>
+    <p>
+      Hai ô thoát nước là <em>bản vẽ, không phải kết luận</em>. Bản vẽ 12 phân biệt hiện
+      trạng, quy hoạch đợt đầu và quy hoạch dài hạn bằng ba cột ký hiệu với kiểu nét khác
+      nhau, không bằng màu — nên trang không đọc hộ. Chú giải đầy đủ nằm ở
+      <a href="/ngap/">câu hỏi về ngập</a>.
+    </p>
+  </section>
+
+  <Fragment slot="source">
+    <p>
+      Bản vẽ 15 — sử dụng đất toàn thành phố; 07 — giao thông đường bộ; 12 — cao độ nền và
+      thoát nước mưa; 13 — thoát nước và xử lý nước thải. Phép biến đổi hiệu chỉnh bằng 4
+      điểm mốc, sai số trung bình 3,6 px (~125 m); mỗi bản vẽ có độ lệch riêng so với bản vẽ
+      15, đã hiệu chỉnh (07: +6,7 px; 12: +6,+10; 13: +2,−4). Trích từ hồ sơ Quy hoạch tổng
+      thể TP.HCM 2025–2050 (bản nháp, chưa đóng dấu).
+    </p>
+  </Fragment>
+
+  <script is:inline src="/vendor/leaflet/leaflet.js"></script>
+  <script type="application/json" id="plan-data" set:html={JSON.stringify(plan)}></script>
+  <script is:inline>
+    const PLAN = JSON.parse(document.getElementById('plan-data').textContent);
+    const W = PLAN.calibration.raster.width, H = PLAN.calibration.raster.height;
+    const FX = PLAN.calibration.fx;
+    const FY = PLAN.calibration.fy;
+    const MPP = PLAN.calibration.raster.mPerPx; // metres per pixel at 8000 px
+    const PALETTE = PLAN.palette;
+    const OFFS = Object.fromEntries(PLAN.sheets.map((s) => [s.id, s]));
+    const TRANSIT = PLAN.transitPalette;
+    const ROAD_R = 1000; // metres searched around the clicked point
+    // The sampler uses a 4800 px copy of the sheets; calibration stays at 8000 px.
+    const SAMPLER_W = 4800, SAMPLER_H = 3395;
+    const SX = SAMPLER_W / W, SY = SAMPLER_H / H;
+    const MPP_S = MPP * (W / SAMPLER_W);
+
+    const map = L.map('map', { scrollWheelZoom: false }).setView([10.75, 106.72], 11);
+    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    });
+    let tileWarned = false;
+    tiles.on('tileerror', () => {
+      if (tileWarned) return;
+      tileWarned = true;
+      document.getElementById('map-error').hidden = false;
+    });
+    tiles.addTo(map);
+
+    const sheet = new Image();
+    const road = new Image();
+    let sheetsPromise = null;
+    let sheetsReady = false;
+    // sheets 12 and 13 are only fetched once a point is clicked
+    const lazy = {};
+    function imgFor(id) {
+      if (lazy[id]) return lazy[id];
+      const im = new Image();
+      im.src = `/calib/sheet${id}-4800.webp`;
+      lazy[id] = im;
+      return im;
+    }
+    let circle = null, marker = null;
+
+    const resultEl = document.getElementById('result');
+    const catEl = document.getElementById('cat');
+    const noteEl = document.getElementById('note');
+    const statusEl = document.getElementById('status');
+    const hintEl = document.getElementById('map-hint');
+    const clearEl = document.getElementById('clear');
+    const matchEl = document.getElementById('match');
+    const hexEl = document.getElementById('hex');
+    const metaEl = document.getElementById('meta');
+    const sheetErrorEl = document.getElementById('sheet-error');
+    const samplesEl = document.querySelector('.samples');
+    const sampleButtons = [...document.querySelectorAll('.sample')];
+
+    function loadImage(img, src) {
+      return new Promise((resolve, reject) => {
+        if (img.complete) {
+          if (img.naturalWidth) { resolve(img); return; }
+          img.src = ''; // clear a broken retry so the next attempt can run
+        }
+        const cleanup = () => {
+          img.removeEventListener('load', ok);
+          img.removeEventListener('error', fail);
+        };
+        const ok = async () => {
+          cleanup();
+          try {
+            await img.decode();
+            resolve(img);
+          } catch {
+            reject(new Error(src));
+          }
+        };
+        const fail = () => {
+          cleanup();
+          reject(new Error(src));
+        };
+        img.addEventListener('load', ok);
+        img.addEventListener('error', fail);
+        img.src = src;
+      });
+    }
+
+    async function ensureSheets() {
+      if (sheetsReady) return true;
+      if (sheetsPromise) {
+        try { await sheetsPromise; } catch { /* handled below */ }
+        return sheetsReady;
+      }
+      sheetErrorEl.hidden = true;
+      hintEl.hidden = false;
+      hintEl.textContent = 'Đang tải bản vẽ…';
+      samplesEl?.setAttribute('aria-busy', 'true');
+      sampleButtons.forEach((b) => { b.disabled = true; });
+      announce('Đang tải bản vẽ. Vui lòng chờ.');
+
+      sheetsPromise = Promise.all([
+        loadImage(sheet, '/calib/sheet15-4800.webp'),
+        loadImage(road, '/calib/sheet07-4800.webp'),
+      ]).then(() => {
+        sheetsReady = true;
+        hintEl.textContent = 'Chạm hoặc click để chọn điểm';
+        samplesEl?.removeAttribute('aria-busy');
+        sampleButtons.forEach((b) => { b.disabled = false; });
+        announce('Bản vẽ đã tải xong.');
+        return true;
+      }).catch(() => {
+        sheetsPromise = null;
+        sheetsReady = false;
+        sheetErrorEl.hidden = false;
+        hintEl.hidden = false;
+        hintEl.textContent = 'Không tải được bản vẽ';
+        samplesEl?.removeAttribute('aria-busy');
+        sampleButtons.forEach((b) => { b.disabled = false; });
+        announce('Không tải được bản vẽ. Kiểm tra kết nối rồi chọn lại điểm.');
+        return false;
+      });
+      return sheetsPromise;
+    }
+
+    function setUrl(lat, lon) {
+      const url = new URL(location.href);
+      if (lat == null) {
+        url.searchParams.delete('lat');
+        url.searchParams.delete('lon');
+      } else {
+        url.searchParams.set('lat', lat.toFixed(5));
+        url.searchParams.set('lon', lon.toFixed(5));
+      }
+      history.replaceState(null, '', url);
+    }
+
+    function removeLayers() {
+      if (circle) { map.removeLayer(circle); circle = null; }
+      if (marker) { map.removeLayer(marker); marker = null; }
+    }
+
+    function revealResult() {
+      if (resultEl.getBoundingClientRect().top > window.innerHeight * 0.55) {
+        resultEl.scrollIntoView({
+          block: 'start',
+          behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        });
+      }
+    }
+
+    function announce(text) {
+      statusEl.textContent = '';
+      requestAnimationFrame(() => { statusEl.textContent = text; });
+    }
+
+    function clearResult() {
+      resultEl.hidden = true;
+      resultEl.classList.remove('is-outside');
+      clearEl.hidden = true;
+      hintEl.hidden = false;
+      hintEl.textContent = 'Chạm hoặc click để chọn điểm';
+      sheetErrorEl.hidden = true;
+      removeLayers();
+      catEl.textContent = '—';
+      noteEl.textContent = '';
+      matchEl.textContent = 'Màu tại điểm';
+      hexEl.textContent = '';
+      metaEl.textContent = '';
+      announce('Đã xoá điểm.');
+      setUrl(null, null);
+      const firstSample = document.querySelector('.sample');
+      if (firstSample && !firstSample.disabled) {
+        firstSample.focus();
+      } else {
+        document.getElementById('map').scrollIntoView({ block: 'center' });
+      }
+    }
+
+    clearEl.addEventListener('click', clearResult);
+
+    function toPx(lat, lon) {
+      return [FX[0]*lon + FX[1]*lat + FX[2], FY[0]*lon + FY[1]*lat + FY[2]];
+    }
+
+    function sample(x, y) {
+      const c = document.createElement('canvas');
+      c.width = 15; c.height = 15;
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(sheet, x-7, y-7, 15, 15, 0, 0, 15, 15);
+      const d = ctx.getImageData(0, 0, 15, 15).data;
+      const r = [], g = [], b = [];
+      for (let i = 0; i < d.length; i += 4) { r.push(d[i]); g.push(d[i+1]); b.push(d[i+2]); }
+      const med = (a) => a.sort((p, q) => p - q)[Math.floor(a.length / 2)];
+      return [med(r), med(g), med(b)];
+    }
+
+    function nearest(rgb) {
+      let best = null, bd = Infinity;
+      for (const [name, p] of PALETTE) {
+        const d = Math.abs(rgb[0]-p[0]) + Math.abs(rgb[1]-p[1]) + Math.abs(rgb[2]-p[2]);
+        if (d < bd) { bd = d; best = [name, p]; }
+      }
+      return { name: best[0], rgb: best[1], dist: bd };
+    }
+
+    // --- bản vẽ 07: tìm nét vẽ gần điểm nhất theo màu chú giải ---
+    const GREY = 120;  // ngưỡng khác biệt màu còn được coi là "đúng nét chú giải"
+
+    function scanRoads(x, y) {
+      const R = Math.round(ROAD_R / MPP_S);
+      const S = 2*R + 1;
+      const c = document.createElement('canvas');
+      c.width = S; c.height = S;
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(road, Math.round(x - R), Math.round(y - R), S, S, 0, 0, S, S);
+      const d = ctx.getImageData(0, 0, S, S).data;
+      const n = TRANSIT.length;
+      const dist = new Array(n).fill(Infinity);
+      const green = new Uint8Array(S*S), red = new Uint8Array(S*S);
+      for (let j = 0; j < S; j++) {
+        for (let i = 0; i < S; i++) {
+          const o = (j*S + i) * 4;
+          const px = [d[o], d[o+1], d[o+2]];
+          let bestK = -1, bd = GREY;
+          for (let k = 0; k < n; k++) {
+            const q = TRANSIT[k].rgb;
+            const dd = Math.abs(px[0]-q[0]) + Math.abs(px[1]-q[1]) + Math.abs(px[2]-q[2]);
+            if (dd < bd) { bd = dd; bestK = k; }
+          }
+          if (bestK < 0) continue;
+          const m = Math.hypot(i - R, j - R) * MPP_S;
+          if (bestK === 0) green[j*S + i] = 1;
+          if (bestK === 1) red[j*S + i] = 1;
+          if (m <= ROAD_R && m < dist[bestK]) dist[bestK] = m;
+        }
+      }
+      // tim đường cao tốc màu đỏ nằm sát dải xanh: cùng một ký hiệu
+      let expresswayRed = false;
+      for (let j = 0; j < S && !expresswayRed; j++) {
+        for (let i = 0; i < S; i++) {
+          if (!red[j*S + i]) continue;
+          for (let dj = -5; dj <= 5 && !expresswayRed; dj++) {
+            for (let di = -5; di <= 5; di++) {
+              const y2 = j + dj, x2 = i + di;
+              if (y2 < 0 || x2 < 0 || y2 >= S || x2 >= S) continue;
+              if (green[y2*S + x2]) { expresswayRed = true; break; }
+            }
+          }
+        }
+      }
+      if (expresswayRed) {
+        dist[0] = Math.min(dist[0], dist[1]);
+        dist[1] = Infinity;
+      }
+      return dist.map((m, k) => ({ ...TRANSIT[k], m, k }));
+    }
+
+    function nearestClassPixel(x, y, rgb, R = Math.round(40 * SX)) {
+      const S = 2*R + 1;
+      const c = document.createElement('canvas');
+      c.width = S; c.height = S;
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(road, Math.round(x - R), Math.round(y - R), S, S, 0, 0, S, S);
+      const d = ctx.getImageData(0, 0, S, S).data;
+      let best = null, bd = Infinity;
+      for (let j = 0; j < S; j++) {
+        for (let i = 0; i < S; i++) {
+          const o = (j*S + i)*4;
+          const q = Math.abs(d[o]-rgb[0]) + Math.abs(d[o+1]-rgb[1]) + Math.abs(d[o+2]-rgb[2]);
+          if (q < 120) {
+            const dd = Math.hypot(i - R, j - R);
+            if (dd < bd) { bd = dd; best = [Math.round(x - R) + i, Math.round(y - R) + j]; }
+          }
+        }
+      }
+      return best;
+    }
+
+    function drawError(canvas, text) {
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 600, 600);
+      ctx.fillStyle = '#6e655a';
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, 300, 300);
+      ctx.textAlign = 'start';
+    }
+
+    function drawCrop(canvas, img, x, y, half) {
+      if (!img.complete || !img.naturalWidth || !Number.isFinite(x) || !Number.isFinite(y)) {
+        drawError(canvas, 'Không tải được bản vẽ');
+        return;
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 600, 600);
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(img, x-half, y-half, 2*half, 2*half, 0, 0, 600, 600);
+      ctx.strokeStyle = '#b03a2e'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(300, 285); ctx.lineTo(300, 315); ctx.moveTo(285, 300); ctx.lineTo(315, 300); ctx.stroke();
+    }
+
+    async function lookup(lat, lon) {
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+      const [x, y] = toPx(lat, lon);
+      const [sx, sy] = [x * SX, y * SY];
+      const outside = x < 0 || y < 0 || x > W || y > H;
+      if (!outside) {
+        if (!sheetsReady && sheetsPromise) {
+          announce('Đang tải bản vẽ. Vui lòng chờ.');
+          return;
+        }
+        if (!sheetsReady) {
+          const ok = await ensureSheets();
+          if (!ok) return;
+        }
+      }
+
+      hintEl.hidden = true;
+      setUrl(lat, lon);
+      resultEl.hidden = false;
+      clearEl.hidden = false;
+      resultEl.classList.toggle('is-outside', outside);
+
+      if (outside) {
+        removeLayers();
+        catEl.textContent = 'Ngoài phạm vi bản vẽ';
+        noteEl.textContent = 'Điểm này nằm ngoài khung bản đồ của bản vẽ 15.';
+        matchEl.textContent = 'Không có mẫu màu';
+        hexEl.textContent = '';
+        metaEl.textContent = `Toạ độ ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+        announce('Ngoài phạm vi bản vẽ. Điểm này nằm ngoài khung bản đồ của bản vẽ 15.');
+        revealResult();
+        return;
+      }
+
+      const rgb = sample(sx, sy);
+      const m = nearest(rgb);
+      const known = m.dist < 75;
+      catEl.textContent = known ? m.name : 'Không xác định';
+      const note = known
+        ? 'Nhóm đất theo chú giải của bản vẽ 15, tại điểm bạn chọn. Sai số ~250 m.'
+        : 'Màu tại điểm này không khớp chú giải (có thể do đường, chữ hoặc viền đè lên).';
+      noteEl.textContent = note;
+      matchEl.textContent = known ? 'Màu khớp chú giải' : 'Màu không khớp chú giải';
+      document.getElementById('swatch').style.background = `rgb(${rgb.join(',')})`;
+      hexEl.textContent = `rgb(${rgb.join(', ')}) · lệch ${m.dist}`;
+      metaEl.textContent = `Toạ độ bản vẽ ${x.toFixed(0)}, ${y.toFixed(0)} (khung 8000 px) · toạ độ ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+      drawCrop(document.getElementById('crop'), sheet, sx, sy, 120 * SX);
+
+      // giao thông
+      const o = OFFS['07'] || { dx: 0, dy: 0 };
+      const x7 = (x + o.dx) * SX, y7 = (y + o.dy) * SY;
+      drawCrop(document.getElementById('crop07'), road, x7, y7, 70 * SX);
+      const c7 = document.getElementById('crop07').getContext('2d');
+      const r7 = (ROAD_R / MPP_S) * (600 / (140 * SX));   // bán kính tìm kiếm, vẽ theo khung cắt
+      c7.beginPath(); c7.arc(300, 300, r7, 0, Math.PI*2);
+      c7.strokeStyle = 'rgba(176,58,46,0.55)'; c7.lineWidth = 1.5; c7.stroke();
+      const streets = scanRoads(x7, y7).filter((s) => isFinite(s.m)).sort((a, b) => a.m - b.m);
+      // khung phóng 10×: lấy điểm gần nhất của loại gần nhất làm tâm
+      let zx = x7, zy = y7;
+      if (streets.length) {
+        const near = nearestClassPixel(x7, y7, TRANSIT[streets[0].k].rgb);
+        if (near) { zx = near[0]; zy = near[1]; }
+      }
+      drawCrop(document.getElementById('crop07z'), road, zx, zy, 30 * SX);
+      const list = document.getElementById('roads');
+      list.innerHTML = '';
+      if (!streets.length) {
+        const li = document.createElement('li');
+        li.textContent = 'Không có nét chú giải nào trong 1 km.';
+        list.appendChild(li);
+      }
+      for (const s of streets) {
+        const li = document.createElement('li');
+        const left = document.createElement('span');
+        const key = document.createElement('i');
+        key.style.cssText = 'display:inline-block;width:16px;height:3px;margin-right:8px;vertical-align:2px;background:rgb(' + s.rgb.join(',') + ')';
+        left.appendChild(key);
+        left.appendChild(document.createTextNode(s.short || s.label));
+        const right = document.createElement('span');
+        right.className = 'coord';
+        right.textContent = 'cách ~' + (Math.round(s.m / 50) * 50) + ' m';
+        li.appendChild(left); li.appendChild(right);
+        list.appendChild(li);
+      }
+      document.getElementById('roads-note').textContent = streets.length
+        ? 'Khoảng cách đo tới nét vẽ gần nhất của loại đó trong bán kính 1 km.'
+        : 'Thử chọn gần một trục đường lớn hơn.';
+
+      // hai bản vẽ thoát nước: chỉ hiển thị, không suy luận
+      for (const id of ['12', '13']) {
+        const off = OFFS[id] || { dx: 0, dy: 0 };
+        const px = (x + off.dx) * SX, py = (y + off.dy) * SY;
+        const canvas = document.getElementById('crop' + id);
+        const im = imgFor(id);
+        const draw = () => drawCrop(canvas, im, px, py, 120 * SX);
+        if (im.complete && im.naturalWidth) draw();
+        else if (im.complete) drawError(canvas, `Không tải được bản vẽ ${id}`);
+        else {
+          im.addEventListener('load', draw, { once: true });
+          im.addEventListener('error', () => drawError(canvas, `Không tải được bản vẽ ${id}`), { once: true });
+        }
+      }
+      document.getElementById('drain-note').textContent =
+        'Cùng một vị trí trên hai bản vẽ thoát nước. Không có suy luận tự động ở đây: kiểu nét (liền/đứt) mới là thứ phân biệt hiện trạng với quy hoạch.';
+
+      removeLayers();
+      marker = L.circleMarker([lat, lon], { radius: 5, color: '#b03a2e', weight: 2, fillColor: '#fff', fillOpacity: 1 }).addTo(map);
+      circle = L.circle([lat, lon], { radius: 250, color: '#b03a2e', weight: 1, fillOpacity: 0.06 }).addTo(map);
+      announce(`${catEl.textContent}. ${note}`);
+      revealResult();
+    }
+
+    map.on('click', (e) => lookup(e.latlng.lat, e.latlng.lng));
+
+    for (const btn of document.querySelectorAll('.sample')) {
+      btn.addEventListener('click', () => {
+        const lat = parseFloat(btn.dataset.lat);
+        const lon = parseFloat(btn.dataset.lon);
+        map.setView([lat, lon], 13);
+        lookup(lat, lon);
+      });
+    }
+
+    const q = new URLSearchParams(location.search);
+    if (q.has('lat') || q.has('lon')) {
+      const parseCoord = (v) => {
+        const raw = (v ?? '').trim();
+        return raw === '' ? NaN : Number(raw);
+      };
+      const lat = parseCoord(q.get('lat'));
+      const lon = parseCoord(q.get('lon'));
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)
+        || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+        setUrl(null, null);
+        announce('Toạ độ trong liên kết không hợp lệ. Đã bỏ qua.');
+      } else {
+        map.setView([lat, lon], 13);
+        lookup(lat, lon);
+      }
+    }
+  </script>
+</Base>

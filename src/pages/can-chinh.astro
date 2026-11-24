@@ -1,0 +1,185 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Hiệu chỉnh bản vẽ — Quy hoạch TP.HCM 2050"
+  description="Trang hiệu chỉnh toạ độ: ghép điểm trên bản vẽ với toạ độ thật để mở khoá tra cứu theo vị trí."
+>
+  <Fragment slot="head">
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
+  </Fragment>
+
+  <p class="q">CÔNG CỤ · HIỆU CHỈNH</p>
+  <h1 class="answer">Ghép bản vẽ với toạ độ</h1>
+  <p class="lede">
+    Bản vẽ không có lưới toạ độ. Để biết “điểm này trên bản vẽ là chỗ nào ngoài đời”, cần
+    ít nhất ba điểm mốc: bạn chọn đúng điểm trên bản vẽ, rồi nhập toạ độ của điểm đó
+    (lấy từ Google Maps: chuột phải → copy toạ độ). Bốn điểm trở lên sẽ cho biết sai số.
+    Đây là công cụ kỹ thuật — bạn không cần dùng nó để đọc các câu trả lời.
+  </p>
+
+  <noscript>
+    <style>.calib-map, .calib-table, .calib-actions { display: none; }</style>
+    <p class="map-error">
+      Công cụ hiệu chỉnh cần JavaScript. Bạn vẫn có thể đọc các trang câu hỏi, địa điểm
+      hoặc <a href="/tra-cuu/">tra cứu điểm</a>.
+    </p>
+  </noscript>
+
+  <div class="map-wrap">
+    <div id="calib" class="calib-map" role="region" aria-label="Bản đồ bản vẽ 15 để chọn điểm mốc"></div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="calib-table">
+      <thead>
+        <tr><th>#</th><th>Điểm mốc</th><th>Vĩ độ (lat)</th><th>Kinh độ (lon)</th><th>Pixel trên bản vẽ</th><th></th></tr>
+      </thead>
+      <tbody id="rows">
+        <tr><td colspan="6" class="num">Chưa có điểm nào — chọn lên bản vẽ để thêm.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="calib-actions">
+    <button id="solve">Tính phép biến đổi</button>
+    <button id="copy" class="ghost">Sao chép JSON</button>
+    <button id="reset" class="ghost">Xoá hết</button>
+  </div>
+
+  <div id="out" class="calib-out" hidden></div>
+
+  <section class="meaning">
+    <h2>Dùng toạ độ nào</h2>
+    <p>
+      Mở Google Maps, tìm địa danh, chuột phải đúng điểm, copy cặp số (ví dụ
+      <span class="mono">10.8188, 106.6519</span>). Chọn điểm có hình dạng rõ trên bản vẽ
+      — sân bay, mũi đất, nút giao lớn — để chọn chính xác. Tránh điểm nằm giữa vùng
+      trống.
+    </p>
+  </section>
+
+  <Fragment slot="source">
+    <p>
+      Bản vẽ 15 (sử dụng đất) phóng 8000 px. Toạ độ do người dùng nhập, không lấy từ hệ
+      thống của thành phố. Kết quả dùng cho bản thử nghiệm, không dùng cho mục đích pháp lý.
+    </p>
+  </Fragment>
+
+  <script is:inline src="/vendor/leaflet/leaflet.js"></script>
+  <script is:inline>
+    const W = 8000, H = 5659;
+    const map = L.map('calib', { crs: L.CRS.Simple, minZoom: -3, maxZoom: 2, zoomSnap: 0.25 });
+    L.imageOverlay('/calib/sheet15.webp', [[0, 0], [H, W]]).addTo(map);
+    map.fitBounds([[0, 0], [H, W]]);
+
+    const pts = [];
+    const rows = document.getElementById('rows');
+    const out = document.getElementById('out');
+
+    function render() {
+      if (!pts.length) {
+        rows.innerHTML = '<tr><td colspan="6" class="num">Chưa có điểm nào — click lên bản vẽ để thêm.</td></tr>';
+        return;
+      }
+      rows.innerHTML = pts.map((p, i) => `
+        <tr>
+          <td class="num">${i + 1}</td>
+          <td><input data-i="${i}" data-k="name" value="${p.name || ''}" placeholder="Tên điểm" /></td>
+          <td><input data-i="${i}" data-k="lat" value="${p.lat ?? ''}" placeholder="10.8188" inputmode="decimal" /></td>
+          <td><input data-i="${i}" data-k="lon" value="${p.lon ?? ''}" placeholder="106.6519" inputmode="decimal" /></td>
+          <td class="num">${p.x.toFixed(0)}, ${p.y.toFixed(0)}</td>
+          <td><button class="ghost" data-del="${i}" style="border:0;background:none;color:#b03a2e;cursor:pointer">xoá</button></td>
+        </tr>`).join('');
+      rows.querySelectorAll('input').forEach((el) => {
+        el.addEventListener('input', (e) => {
+          const i = +e.target.dataset.i, k = e.target.dataset.k;
+          pts[i][k] = k === 'name' ? e.target.value : parseFloat(e.target.value);
+        });
+      });
+      rows.querySelectorAll('button[data-del]').forEach((el) => {
+        el.addEventListener('click', (e) => {
+          const i = +e.target.dataset.del;
+          pts.splice(i, 1);
+          map.eachLayer((l) => { if (l._calibPoint) map.removeLayer(l); });
+          pts.forEach((p) => drawMarker(p));
+          render();
+        });
+      });
+    }
+
+    function drawMarker(p) {
+      const m = L.circleMarker([H - p.y, p.x], { radius: 7, color: '#b03a2e', weight: 2, fillColor: '#fff', fillOpacity: 1 }).addTo(map);
+      m._calibPoint = true;
+    }
+
+    map.on('click', (e) => {
+      const p = { x: e.latlng.lng, y: H - e.latlng.lat, name: '', lat: null, lon: null };
+      pts.push(p);
+      drawMarker(p);
+      render();
+    });
+
+    function solve3(P) {
+      // P: [[lon, lat, value], ...] least squares for value = a*lon + b*lat + c
+      let A = [[0,0,0],[0,0,0],[0,0,0]], b = [0,0,0];
+      for (const [lon, lat, v] of P) {
+        const r = [lon, lat, 1];
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) A[i][j] += r[i] * r[j];
+          b[i] += r[i] * v;
+        }
+      }
+      // gaussian elimination
+      for (let i = 0; i < 3; i++) {
+        let piv = i;
+        for (let k = i + 1; k < 3; k++) if (Math.abs(A[k][i]) > Math.abs(A[piv][i])) piv = k;
+        [A[i], A[piv]] = [A[piv], A[i]];
+        [b[i], b[piv]] = [b[piv], b[i]];
+        const d = A[i][i];
+        if (Math.abs(d) < 1e-12) return null;
+        for (let j = i; j < 3; j++) A[i][j] /= d;
+        b[i] /= d;
+        for (let k = 0; k < 3; k++) {
+          if (k === i) continue;
+          const f = A[k][i];
+          for (let j = i; j < 3; j++) A[k][j] -= f * A[i][j];
+          b[k] -= f * b[i];
+        }
+      }
+      return b;
+    }
+
+    document.getElementById('solve').addEventListener('click', () => {
+      const good = pts.filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lon));
+      if (good.length < 3) { out.hidden = false; out.textContent = 'Cần ít nhất 3 điểm có toạ độ.'; return; }
+      const fx = solve3(good.map((p) => [p.lon, p.lat, p.x]));
+      const fy = solve3(good.map((p) => [p.lon, p.lat, p.y]));
+      if (!fx || !fy) { out.hidden = false; out.textContent = 'Các điểm gần như thẳng hàng — chọn điểm phân bố rộng hơn.'; return; }
+      let maxRes = 0, sum = 0;
+      good.forEach((p) => {
+        const px = fx[0] * p.lon + fx[1] * p.lat + fx[2];
+        const py = fy[0] * p.lon + fy[1] * p.lat + fy[2];
+        const r = Math.hypot(px - p.x, py - p.y);
+        maxRes = Math.max(maxRes, r); sum += r;
+      });
+      const json = { image: '/calib/sheet15.webp', width: W, height: H, fx, fy, points: good.length, meanResidualPx: sum / good.length, maxResidualPx: maxRes };
+      out.hidden = false;
+      out.textContent = `Điểm: ${good.length}\nSai số trung bình: ${(sum / good.length).toFixed(1)} px\nSai số lớn nhất: ${maxRes.toFixed(1)} px\n\n${JSON.stringify(json, null, 2)}`;
+    });
+
+    document.getElementById('copy').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(out.textContent); out.hidden = false; } catch (e) {}
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+      pts.length = 0;
+      map.eachLayer((l) => { if (l._calibPoint) map.removeLayer(l); });
+      out.hidden = true;
+      render();
+    });
+
+    render();
+  </script>
+</Base>

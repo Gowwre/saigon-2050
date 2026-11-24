@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Không tìm thấy trang — Quy hoạch TP.HCM 2050"
+  description="Trang này không có trong bộ hồ sơ. Mở mục lục để tìm câu hỏi, địa điểm hoặc công cụ."
+>
+  <p class="q">LỖI 404</p>
+  <h1 class="answer">Trang này không có trong bộ hồ sơ.</h1>
+  <p class="lede">
+    Có thể liên kết đã cũ, hoặc địa chỉ bị gõ sai. Mục lục có đủ 13 trang của bản đọc —
+    ba câu hỏi, năm địa điểm, một góc nhìn và bốn công cụ.
+  </p>
+
+  <div class="cta">
+    <p class="cta-label">TÌM TRANG BẠN CẦN</p>
+    <p class="cta-text">Mở mục lục để chọn theo câu hỏi, địa điểm hoặc công cụ.</p>
+    <a class="btn" href="/muc-luc/">Mở mục lục <span aria-hidden="true">→</span></a>
+    <p class="helper"><a href="/">Về trang đầu</a></p>
+  </div>
+
+  <Fragment slot="source">
+    <p>Không có nguồn bản vẽ cho một địa chỉ không tồn tại. Mục lục dẫn tới 13 trang có nguồn.</p>
+  </Fragment>
+</Base>

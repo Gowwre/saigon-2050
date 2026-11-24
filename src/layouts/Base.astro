@@ -1,0 +1,100 @@
+---
+import '../styles/global.css';
+import ReadNext from '../components/ReadNext.astro';
+
+const { title, description } = Astro.props;
+
+const siteRoot = Astro.site ? new URL(Astro.site.href.replace(/\/?$/, '/')) : null;
+const canonical = siteRoot ? new URL(Astro.url.pathname.replace(/^\/+/, ''), siteRoot) : null;
+const ogImage = siteRoot ? new URL('og.jpg', siteRoot) : null;
+const feedbackEmail = (import.meta.env.PUBLIC_FEEDBACK_EMAIL ?? '').trim();
+
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const active = (href: string) =>
+  path === (href.replace(/\/+$/, '') || '/') ? 'page' : undefined;
+const showReadNext = !path.startsWith('/muc-luc');
+---
+
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex,nofollow" />
+    {canonical && <link rel="canonical" href={canonical.href} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical.href} />}
+    {ogImage && <meta property="og:image" content={ogImage.href} />}
+    {ogImage && <meta property="og:image:type" content="image/jpeg" />}
+    {ogImage && <meta property="og:image:width" content="1200" />}
+    {ogImage && <meta property="og:image:height" content="630" />}
+    {ogImage && <meta property="og:image:alt" content="Bản đồ quy hoạch TP.HCM 2025–2050 — bản thử nghiệm" />}
+    {ogImage && <meta name="twitter:image" content={ogImage.href} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="theme-color" content="#f7f3ea" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Bỏ qua đến nội dung</a>
+    <div class="page">
+      <header class="top">
+        <div class="top-head">
+          <a class="kicker site-title" href="/">
+            QUY HOẠCH TỔNG THỂ TP.HCM<br />2025–2050 · TẦM NHÌN 100 NĂM
+          </a>
+          <span class="stamp">BẢN NHÁP · CHƯA ĐÓNG DẤU</span>
+        </div>
+        <nav class="site-nav" aria-label="Điều hướng chính">
+          <a href="/" aria-current={active('/')}>Trang đầu</a>
+          <a href="/muc-luc/" aria-current={active('/muc-luc/')}>Mục lục</a>
+          <a href="/tra-cuu/" aria-current={active('/tra-cuu/')}>Tra cứu điểm</a>
+        </nav>
+      </header>
+
+      <main id="main" tabindex="-1">
+        <slot />
+      </main>
+
+      {showReadNext && <ReadNext current={path} />}
+
+      <footer>
+        <p class="mono">NGUỒN</p>
+        <slot name="source" />
+        <p>Phê duyệt: QĐ 7308/QĐ-UBND ngày 31/10/2026.</p>
+        <p class="mono">BẢN THỬ NGHIỆM · NỘI DUNG ĐANG ĐƯỢC KIỂM CHỨNG</p>
+        <p class="footer-feedback">
+          {feedbackEmail
+            ? <a href={`mailto:${feedbackEmail}?subject=${encodeURIComponent('Góp ý bản thử nghiệm Saigon 2050')}`}>Góp ý bản thử nghiệm</a>
+            : 'Góp ý: trả lời email hoặc tin nhắn đã gửi liên kết.'}
+        </p>
+      </footer>
+    </div>
+
+    <script is:inline>
+      (() => {
+        for (const img of document.querySelectorAll('figure img')) {
+          if (img.closest('a')) continue;
+          const link = document.createElement('a');
+          link.className = 'plate-zoom';
+          link.href = img.getAttribute('src');
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.setAttribute('aria-label', 'Mở ảnh đầy đủ: ' + (img.alt || 'bản vẽ'));
+          img.replaceWith(link);
+          link.appendChild(img);
+          const hint = document.createElement('span');
+          hint.className = 'plate-zoom-hint';
+          hint.textContent = 'Xem lớn ↗';
+          hint.setAttribute('aria-hidden', 'true');
+          link.appendChild(hint);
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Bản đồ năm cực — Quy hoạch TP.HCM 2050"
+  description="Bản đồ định hướng các cực và trung tâm trong Quy hoạch tổng thể TP.HCM 2025–2050. Vị trí ước lệ, không phải ranh giới quy hoạch."
+>
+  <Fragment slot="head">
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
+  </Fragment>
+
+  <p class="q">BẢN ĐỒ · ƯỚC LỆ</p>
+  <h1 class="answer">Năm cực, một lãnh thổ</h1>
+  <p class="lede">
+    Vị trí các cực và trung tâm theo mô hình. Đây là bản đồ định hướng để bạn đặt mình
+    vào câu chuyện — không phải ranh giới quy hoạch, không phải thửa đất.
+  </p>
+
+  <noscript>
+    <style>#map { display: none; }</style>
+    <p class="map-error">
+      Bản đồ cần JavaScript. Danh sách năm cực bên dưới vẫn dùng được để mở từng địa điểm.
+    </p>
+  </noscript>
+
+  <div class="map-wrap">
+    <div id="map" class="map" role="region" aria-label="Bản đồ năm cực của Quy hoạch TP.HCM"></div>
+  </div>
+  <p class="map-error" id="map-error" role="status" hidden>Không tải được bản đồ nền (OpenStreetMap). Các điểm vẫn hiển thị trên khung; danh sách bên dưới là bản thay thế.</p>
+
+  <ul class="map-list">
+    <li><a href="/ben-thanh/">Bến Thành — lõi trung tâm</a><span class="coord">10.7725, 106.6980</span></li>
+    <li><a href="/thu-duc/">Thủ Đức — cực đổi mới sáng tạo</a><span class="coord">10.8494, 106.7531</span></li>
+    <li><a href="/tan-son-nhat/">Tân Sơn Nhất — cửa ngõ</a><span class="coord">10.8188, 106.6519</span></li>
+    <li><a href="/vung-tau/">Vũng Tàu — cực kinh tế biển</a><span class="coord">10.3460, 107.0843</span></li>
+    <li><a href="/can-gio/">Cần Giờ — khu dự trữ sinh quyển</a><span class="coord">10.4114, 106.9547</span></li>
+  </ul>
+
+  <section class="meaning">
+    <h2>Điều bản đồ này không nói</h2>
+    <p>
+      Nó không vẽ vùng, không đo khoảng cách, không nói lô đất của bạn nằm ở đâu. Nó chỉ
+      trả lời một câu: các cực của mô hình nằm ở đâu trên lãnh thổ. Muốn biết quy hoạch
+      nói gì tại một điểm, dùng <a href="/tra-cuu/">công cụ tra cứu</a> — nó chiếu điểm đó
+      xuống bốn bản vẽ của hồ sơ.
+    </p>
+  </section>
+
+  <Fragment slot="source">
+    <p>
+      Vị trí lấy theo toạ độ trung tâm của các địa danh, không trích từ bản vẽ. Nền bản
+      đồ: OpenStreetMap. Quy hoạch: hồ sơ bản vẽ 2025–2050 (bản nháp, chưa đóng dấu).
+    </p>
+  </Fragment>
+
+  <script is:inline src="/vendor/leaflet/leaflet.js"></script>
+  <script is:inline>
+    const places = [
+      { name: 'Bến Thành — lõi trung tâm', ll: [10.7725, 106.698], href: '/ben-thanh/' },
+      { name: 'Thủ Đức — cực đổi mới sáng tạo', ll: [10.8494, 106.7531], href: '/thu-duc/' },
+      { name: 'Tân Sơn Nhất — cửa ngõ', ll: [10.8188, 106.6519], href: '/tan-son-nhat/' },
+      { name: 'Vũng Tàu — cực kinh tế biển', ll: [10.346, 107.0843], href: '/vung-tau/' },
+      { name: 'Cần Giờ — khu dự trữ sinh quyển', ll: [10.4114, 106.9547], href: '/can-gio/' },
+    ];
+    const map = L.map('map', { scrollWheelZoom: false });
+    const pts = places.map((p) => p.ll);
+    map.fitBounds(pts, { padding: [30, 30], maxZoom: 9 });
+    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    });
+    let tileWarned = false;
+    tiles.on('tileerror', () => {
+      if (tileWarned) return;
+      tileWarned = true;
+      document.getElementById('map-error').hidden = false;
+    });
+    tiles.addTo(map);
+    for (const p of places) {
+      const popup = p.href
+        ? `<a href="${p.href}"><strong>${p.name}</strong></a><br/><span>Xem trang địa điểm →</span>`
+        : `<strong>${p.name}</strong><br/><span>Trang địa điểm đang hoàn thiện</span>`;
+      L.marker(p.ll, { title: p.name, alt: p.name }).addTo(map).bindPopup(popup);
+    }
+  </script>
+</Base>

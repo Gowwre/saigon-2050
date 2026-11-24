@@ -1,0 +1,47 @@
+---
+import { allItems, itemFor, sectionFor } from '../data/site';
+
+interface Props {
+  current: string;
+}
+
+const { current } = Astro.props;
+const norm = current.replace(/\/+$/, '') || '/';
+const related: Record<string, string[]> = {
+  '/my-khanh': ['/vung-tau/', '/cay-xanh/', '/chu-giai/', '/ban-do/'],
+};
+
+const section = sectionFor(norm);
+let links = section
+  ? section.items
+      .filter((item) => (item.href.replace(/\/+$/, '') || '/') !== norm)
+      .map((item) => ({ ...item, kind: section.label }))
+  : [];
+
+if (!links.length) {
+  const hrefs = related[norm] ?? allItems.slice(0, 4).map((item) => item.href);
+  links = hrefs
+    .map((href) => itemFor(href))
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .map((item) => ({ ...item, kind: item.section }));
+}
+---
+
+<nav class="read-next" aria-labelledby="read-next-title">
+  <div class="rn-head">
+    <h2 id="read-next-title">Đọc tiếp</h2>
+    <a class="rn-all" href="/muc-luc/">Mục lục đầy đủ <span aria-hidden="true">→</span></a>
+  </div>
+  <ul class="rn-list">
+    {
+      links.map((item) => (
+        <li>
+          <a href={item.href}>
+            <span class="rn-label">{item.label}</span>
+            <span class="rn-kind">{item.kind}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

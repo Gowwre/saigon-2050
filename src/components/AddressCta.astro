@@ -1,0 +1,16 @@
+---
+interface Props {
+  note?: string;
+}
+
+const {
+  note = 'Bản đồ theo địa chỉ đang được hoàn thiện. Trong lúc đó, bạn có thể chọn một điểm trên bản vẽ để xem quy hoạch ở đó.',
+} = Astro.props;
+---
+
+<div class="cta">
+  <p class="cta-label">XEM THEO NƠI BẠN Ở</p>
+  <p class="cta-text">{note}</p>
+  <a class="btn" href="/tra-cuu/">Tra cứu điểm trên bản vẽ <span aria-hidden="true">→</span></a>
+  <p class="helper">Sai số khoảng 250 m — cấp vùng, không phải thửa đất.</p>
+</div>

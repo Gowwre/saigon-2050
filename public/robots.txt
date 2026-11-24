@@ -1,0 +1,5 @@
+# Preview build: keep this site out of search indexes until the dossier is cleared
+# for public release. Remove this file, the noindex meta tag in Base.astro, and the
+# X-Robots-Tag line in _headers at launch.
+User-agent: *
+Disallow: /

@@ -1,0 +1,127 @@
+---
+import Base from '../layouts/Base.astro';
+import plan from '../data/plan.json';
+
+const land = plan.palette;
+const roads = plan.transitPalette;
+const hex = (c) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('');
+---
+
+<Base
+  title="Chú giải — Quy hoạch TP.HCM 2050"
+  description="Bảng giải mã ký hiệu của bốn bản vẽ trong hồ sơ Quy hoạch tổng thể TP.HCM 2025–2050: 32 nhóm đất của bản vẽ 15, ba loại đường của bản vẽ 07, ba cột giai đoạn của bản vẽ 12."
+>
+  <p class="q">CÔNG CỤ · CHÚ GIẢI</p>
+  <h1 class="answer">Màu và nét nói gì?</h1>
+  <p class="lede">
+    Bản vẽ dùng hai thứ để nói ba loại thông tin khác nhau: <strong>màu</strong> cho loại đất
+    hoặc loại đường, <strong>kiểu nét</strong> cho giai đoạn hoặc mức chắc chắn. Trang này là
+    bảng giải mã của bốn bản vẽ mà trang web dùng.
+  </p>
+
+  <section class="frames">
+    <article class="frame">
+      <h2>BẢN VẼ 15 · SỬ DỤNG ĐẤT</h2>
+      <p>
+        32 nhóm đất, mỗi nhóm một màu. Bảng dưới lấy đúng màu từ ô chú giải của bản vẽ — nên
+        khi ô tra cứu trả về “Khu vực cây xanh đô thị tập trung”, bạn đối chiếu được với màu ở
+        đây.
+      </p>
+    </article>
+  </section>
+
+  <ul class="legend-grid">
+    {land.map(([name, rgb]) => (
+      <li>
+        <i style={`background:rgb(${rgb.join(',')})`} />
+        {name}
+        <span>{hex(rgb)}</span>
+      </li>
+    ))}
+  </ul>
+
+  <section class="frames">
+    <article class="frame">
+      <h2>BẢN VẼ 07 · GIAO THÔNG ĐƯỜNG BỘ</h2>
+      <p>
+        Ba loại đường, ba màu. Nhưng bản vẽ không phân biệt hiện trạng với quy hoạch bằng màu:
+        nó in hai cột — <em>hiện trạng cải tạo</em> vẽ nét liền, <em>quy hoạch xây mới</em> vẽ
+        nét đứt — với cùng một màu cho mỗi loại.
+      </p>
+      <ul class="line-legend">
+        {roads.map((r) => (
+          <li>
+            <i style={`border-top-color:rgb(${r.rgb.join(',')})`} />
+            <span>{r.label}</span>
+            <em>{hex(r.rgb)}</em>
+          </li>
+        ))}
+        <li>
+          <i class="dash" style="border-top-color:var(--ink)" />
+          <span>Nét đứt = quy hoạch xây mới</span>
+          <em>không đọc tự động</em>
+        </li>
+      </ul>
+      <p>
+        Hai lỗi chú giải đáng biết: <em>đường tỉnh</em> và <em>đường cấp đô thị</em> dùng
+        chung một màu tím; và tim của đường cao tốc cũng là màu đỏ của quốc lộ, nên màu đỏ
+        nằm giữa dải xanh phải đọc là cao tốc, không phải quốc lộ.
+      </p>
+    </article>
+  </section>
+
+  <figure>
+    <img
+      src="/plates/chu-giai-12.webp"
+      width="1500"
+      height="1187"
+      alt="Chú giải bản vẽ 12 với ba cột Hiện trạng, QH Đợt đầu, QH Dài hạn và các ký hiệu đê, cống, mương, trạm bơm, kênh, ao hồ."
+      loading="lazy"
+    />
+    <figcaption>
+      <span
+        >Bản vẽ 12 có ba cột cho một hàng ký hiệu. Cùng là “cống thoát nước mưa”, nhưng hiện
+        trạng vẽ nét liền màu đen, quy hoạch vẽ nét đứt màu xanh.</span
+      >
+      <span class="src">BẢN VẼ 12</span>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img
+      src="/plates/chu-giai-18.webp"
+      width="1500"
+      height="1212"
+      alt="Chú giải bản vẽ 18: không gian xanh, cảnh quan khu bảo tồn thiên nhiên, cảnh quan sinh thái bán ngập, cảnh quan sinh thái ven sông, cảnh quan mặt nước, công viên và điểm du lịch sinh thái, khu vực cảnh quan tự nhiên, hành lang xanh, khu vực sinh thái với chức năng đặc biệt."
+      loading="lazy"
+    />
+    <figcaption>
+      <span
+        >Bản vẽ 18 là chú giải kiểu khác: nó đặt tên cho <em>loại cảnh quan</em>, không gán màu
+        cho từng loại đất. Dòng duy nhất có mũi tên là “hành lang xanh” — một chỗ nối.</span
+      >
+      <span class="src">BẢN VẼ 18</span>
+    </figcaption>
+  </figure>
+
+  <section class="meaning">
+    <h2>Ba quy tắc đọc</h2>
+    <p>
+      <strong>Một:</strong> màu là loại — đất, đường, hay nước. <strong>Hai:</strong> nét là
+      thời gian — liền là đang có hoặc cải tạo, đứt là sẽ làm. <strong>Ba:</strong> đừng đọc
+      màu ở nơi cỡ chữ và mũi tên đè lên: bản vẽ là raster, chữ đè lên màu nền và làm màu
+      sai đi.
+    </p>
+
+  </section>
+
+  <Fragment slot="source">
+    <p>
+      Chú giải bản vẽ 15 (32 nhóm đất, màu lấy từ ô chú giải), bản vẽ 07 (ba loại đường, hai
+      cột hiện trạng/quy hoạch), bản vẽ 12 (ba cột hiện trạng / QH đợt đầu / QH dài hạn).
+      Trích từ hồ sơ Quy hoạch tổng thể TP.HCM 2025–2050, tầm nhìn 100 năm (bản nháp, chưa
+      đóng dấu). Màu hiển thị trên giấy in và trên ảnh quét có thể lệch vài đơn vị so với
+      màu khai báo.
+    </p>
+  </Fragment>
+</Base>

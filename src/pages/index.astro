@@ -1,0 +1,109 @@
+---
+import Base from '../layouts/Base.astro';
+import AddressCta from '../components/AddressCta.astro';
+---
+
+<Base
+  title="Đi làm sẽ nhanh hơn không? — Quy hoạch TP.HCM 2050"
+  description="Câu trả lời ngắn cho một câu hỏi thường ngày về Quy hoạch tổng thể TP.HCM 2025–2050: metro được xếp lịch theo bốn giai đoạn, từ 2026–2030 đến sau 2045."
+>
+  <p class="q">Đi làm sẽ nhanh hơn không?</p>
+  <h1 class="answer">Có — nhưng theo lịch.</h1>
+  <p class="lede">
+    Quy hoạch xếp từng tuyến metro vào bốn giai đoạn: 2026–2030, 2030–2035,
+    2035–2045, sau 2045. Ngày đi làm của bạn thay đổi theo giai đoạn mà tuyến gần
+    bạn rơi vào, không phải theo một mốc chung.
+  </p>
+
+  <ol class="strip" aria-label="Bốn mốc thời gian">
+    <li class="seg-solid">
+      <span class="why">Hiện nay</span>
+      <span class="what">Đã có</span>
+    </li>
+    <li class="seg-dash">
+      <span class="why">2030</span>
+      <span class="what">Đang triển khai</span>
+    </li>
+    <li class="seg-fade dot-hollow">
+      <span class="why">2050</span>
+      <span class="what">Đã quy hoạch</span>
+    </li>
+    <li class="seg-end dot-fade">
+      <span class="why">2075</span>
+      <span class="what">Tầm nhìn</span>
+    </li>
+  </ol>
+
+  <section class="frames">
+    <article class="frame">
+      <h2>ĐẾN 2030</h2>
+      <p>
+        Nhóm 2026–2030 được xếp trước. Nếu tuyến của bạn nằm trong đó, thay đổi
+        đến trong 5–10 năm tới — với điều kiện vốn được bố trí.
+      </p>
+      <p class="chips">
+        <span class="chip"><i style="--c:#9e2629"></i>MRT 2026–2030</span>
+      </p>
+    </article>
+    <article class="frame">
+      <h2>ĐẾN 2050</h2>
+      <p>
+        Nhóm 2035–2045 và sau 2045 vẫn còn trong lịch. Tổng thể quy hoạch: 18
+        tuyến metro và 14 tuyến LRT trên toàn thành phố.
+      </p>
+      <p class="chips">
+        <span class="chip"><i style="--c:#f27739"></i>MRT 2030–2035</span>
+        <span class="chip"><i style="--c:#973294"></i>MRT 2035–2045</span>
+        <span class="chip"><i style="--c:#136634"></i>LRT 2030–2035</span>
+        <span class="chip"><i style="--c:#0dfe0d"></i>LRT 2035–2045</span>
+      </p>
+    </article>
+    <article class="frame">
+      <h2>SAU 2050</h2>
+      <p>
+        Tầm nhìn: mạng lưới hoàn chỉnh, không còn giai đoạn đầu tư. Chỉ còn cấu
+        trúc đô thị — và những tuyến đã thành hiện thực.
+      </p>
+      <p class="chips">
+        <span class="chip"><i style="--c:#4452a4"></i>MRT sau 2045</span>
+        <span class="chip"><i style="--c:#71732f"></i>LRT sau 2045</span>
+      </p>
+    </article>
+  </section>
+
+  <figure>
+    <img
+      src="/plates/phan-ky.webp"
+      width="1400"
+      height="1412"
+      alt="Sơ đồ phân kỳ đầu tư của bản vẽ 08: mạng lưới metro và LRT chia theo bốn màu tương ứng bốn giai đoạn 2026–2030, 2030–2035, 2035–2045 và sau 2045."
+      loading="lazy"
+    />
+    <figcaption>
+      <span
+        >Sơ đồ phân kỳ đầu tư. Bốn giai đoạn, bốn màu — lịch đầu tư, không phải
+        cam kết vốn.</span
+      >
+      <span class="src">BẢN VẼ 08 · TR. 1</span>
+    </figcaption>
+  </figure>
+
+  <section class="meaning">
+    <h2>Điều này nghĩa gì với bạn</h2>
+    <p>
+      Nếu tuyến gần nhà bạn thuộc nhóm sau 2045, câu trả lời trung thực là: chưa.
+      Vì vậy trang này cho xem lịch, không chỉ bản đồ.
+    </p>
+
+    <AddressCta />
+
+  </section>
+
+  <Fragment slot="source">
+    <p>
+      Bản vẽ 08 — Giao thông đường thủy, đường sắt, đường hàng không; sơ đồ phân kỳ
+      đầu tư. Trích từ hồ sơ Quy hoạch tổng thể TP.HCM 2025–2050, tầm nhìn 100 năm
+      (bản nháp, chưa đóng dấu).
+    </p>
+  </Fragment>
+</Base>

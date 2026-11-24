@@ -1,0 +1,108 @@
+---
+import Base from '../layouts/Base.astro';
+import AddressCta from '../components/AddressCta.astro';
+---
+
+<Base
+  title="Đường tôi có còn ngập không? — Quy hoạch TP.HCM 2050"
+  description="Quy hoạch thoát nước TP.HCM không gắn năm: hệ thống chia làm hai đợt — quy hoạch đợt đầu và quy hoạch dài hạn — cộng với phần hiện trạng."
+>
+  <p class="q">Đường tôi có còn ngập không?</p>
+  <h1 class="answer">Có quy hoạch — nhưng không có lịch.</h1>
+  <p class="lede">
+    Khác với metro, hệ thống thoát nước không được gắn năm. Bản vẽ chia nó thành ba
+    trạng thái: hiện trạng, quy hoạch đợt đầu, quy hoạch dài hạn. Đó là toàn bộ
+    những gì quy hoạch nói về thời gian.
+  </p>
+
+  <ol class="strip strip--3" aria-label="Ba trạng thái">
+    <li class="seg-dash">
+      <span class="why">Hiện trạng</span>
+      <span class="what">Đang có</span>
+    </li>
+    <li class="seg-fade dot-hollow">
+      <span class="why">Đợt đầu</span>
+      <span class="what">Bổ sung trước</span>
+    </li>
+    <li class="seg-end dot-fade">
+      <span class="why">Dài hạn</span>
+      <span class="what">Phần còn lại</span>
+    </li>
+  </ol>
+  <p class="strip-note">Bản vẽ không ghi năm cho hai đợt quy hoạch.</p>
+
+  <section class="frames">
+    <article class="frame">
+      <h2>HIỆN TRẠNG</h2>
+      <p>
+        Đê, cống, mương, trạm bơm đang có — mỗi loại một ký hiệu riêng, vẽ nét mảnh.
+      </p>
+    </article>
+    <article class="frame">
+      <h2>ĐỢT ĐẦU</h2>
+      <p>
+        Phần bổ sung của đợt đầu dùng ký hiệu màu: cống hộp, cống, mương, miệng xả,
+        trạm bơm tiêu.
+      </p>
+    </article>
+    <article class="frame">
+      <h2>DÀI HẠN</h2>
+      <p>
+        Phần dài hạn dùng nét đứt: cùng loại hạ tầng, khác thời điểm. Không có năm
+        nào kèm theo.
+      </p>
+    </article>
+  </section>
+
+  <figure>
+    <img
+      src="/plates/ngap-chu-giai.webp"
+      width="1500"
+      height="1081"
+      alt="Chú giải của bản vẽ 12 với ba cột: hiện trạng, quy hoạch đợt đầu, quy hoạch dài hạn, và các ký hiệu đê, cống, mương, miệng xả, trạm bơm tiêu."
+      loading="lazy"
+    />
+    <figcaption>
+      <span
+        >Chú giải ba trạng thái. Cùng một loại hạ tầng, ba nét vẽ khác nhau — và
+        không có cột nào ghi năm.</span
+      >
+      <span class="src">BẢN VẼ 12</span>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img
+      src="/plates/ngap-mang-luoi.webp"
+      width="1500"
+      height="1506"
+      alt="Mạng lưới thoát nước nội thành: ranh giới lưu vực, cống, mương và các trạm bơm tiêu."
+      loading="lazy"
+    />
+    <figcaption>
+      <span
+        >Mạng lưới nội thành: lưu vực, cống, mương, trạm bơm tiêu.</span
+      >
+      <span class="src">BẢN VẼ 12</span>
+    </figcaption>
+  </figure>
+
+  <section class="meaning">
+    <h2>Điều này nghĩa gì với bạn</h2>
+    <p>
+      Không có năm nghĩa là không có gì để chờ theo lịch. Nếu tuyến phố của bạn
+      ngập, quy hoạch chỉ nói nó thuộc đợt nào — không nói khi nào.
+    </p>
+
+    <AddressCta note="Bản đồ theo địa chỉ đang được hoàn thiện. Công cụ tra cứu cắt cả hai bản vẽ thoát nước (12 và 13) quanh điểm bạn chọn — không đọc hộ, vì kiểu nét mới phân biệt hiện trạng với quy hoạch." />
+
+  </section>
+
+  <Fragment slot="source">
+    <p>
+      Bản vẽ 12 — Cao độ nền và thoát nước mưa toàn thành phố; chú giải ba trạng
+      thái và mạng lưới thoát nước. Trích từ hồ sơ Quy hoạch tổng thể TP.HCM
+      2025–2050, tầm nhìn 100 năm (bản nháp, chưa đóng dấu).
+    </p>
+  </Fragment>
+</Base>

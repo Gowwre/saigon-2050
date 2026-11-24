@@ -1,0 +1,351 @@
+{
+ "calibration": {
+  "raster": {
+   "width": 8000,
+   "height": 5659,
+   "mPerPx": 35
+  },
+  "points": 4,
+  "meanResidualPx": 3.6247,
+  "maxResidualPx": 7.2493,
+  "fx": [
+   3167.1924616751785,
+   40.1407451855539,
+   -334771.5337325039
+  ],
+  "fy": [
+   243.26492738698764,
+   -3097.496882466587,
+   11181.6037925723
+  ],
+  "note": "x = fx0*lon + fx1*lat + fx2; y = fy0*lon + fy1*lat + fy2. 4 điểm mốc (Google Maps) do người dùng cung cấp, giải bình phương tối thiểu."
+ },
+ "sheets": [
+  {
+   "id": "06",
+   "title": "Định hướng phát triển không gian toàn thành phố",
+   "dx": 0,
+   "dy": 0,
+   "verified": true
+  },
+  {
+   "id": "07",
+   "title": "Giao thông đường bộ",
+   "dx": 6.7,
+   "dy": 0,
+   "verified": true
+  },
+  {
+   "id": "12",
+   "title": "Cao độ nền và thoát nước mưa",
+   "dx": 6,
+   "dy": 10,
+   "verified": true
+  },
+  {
+   "id": "13",
+   "title": "Thoát nước và xử lý nước thải",
+   "dx": 2,
+   "dy": -4,
+   "verified": true
+  },
+  {
+   "id": "15",
+   "title": "Sử dụng đất toàn thành phố",
+   "dx": 0,
+   "dy": 0,
+   "verified": true
+  }
+ ],
+ "registrationNote": "Toạ độ bản vẽ N tính từ bản vẽ 15: p_N = p15 + (dx, dy), đơn vị px ở ảnh rộng 8000 px (1 px = 35 m). Đo bằng tương quan pha trên 16 ô, rồi kiểm bằng NCC cục bộ ±12 px tại 3–4 mốc; sai số còn lại ≤2 px (~70 m). Bản vẽ 06 gần trùng bản vẽ 15 (4,8% số điểm khác biệt) nên không dùng làm lớp riêng.",
+ "palette": [
+  [
+   "Khu trung tâm thành phố",
+   [
+    152,
+    71,
+    68
+   ]
+  ],
+  [
+   "Khu trung tâm phân vùng",
+   [
+    207,
+    126,
+    123
+   ]
+  ],
+  [
+   "Khu trung tâm khu vực",
+   [
+    222,
+    110,
+    109
+   ]
+  ],
+  [
+   "Khu vực đô thị",
+   [
+    247,
+    195,
+    115
+   ]
+  ],
+  [
+   "Khu vực nông thôn",
+   [
+    219,
+    235,
+    170
+   ]
+  ],
+  [
+   "Khu vực đô thị – công viên công cộng",
+   [
+    111,
+    221,
+    0
+   ]
+  ],
+  [
+   "Khu vực đô thị sinh thái, dịch vụ du lịch",
+   [
+    192,
+    255,
+    0
+   ]
+  ],
+  [
+   "Khu vực nông nghiệp và phát triển nông thôn – dự trữ phát triển đô thị",
+   [
+    190,
+    255,
+    127
+   ]
+  ],
+  [
+   "Khu vực đa chức năng",
+   [
+    184,
+    236,
+    140
+   ]
+  ],
+  [
+   "Khu phức hợp sân golf – dịch vụ",
+   [
+    252,
+    219,
+    236
+   ]
+  ],
+  [
+   "Khu đa chức năng không có ở",
+   [
+    192,
+    241,
+    248
+   ]
+  ],
+  [
+   "Khu vực đô thị du lịch",
+   [
+    62,
+    229,
+    221
+   ]
+  ],
+  [
+   "Khu du lịch",
+   [
+    254,
+    150,
+    229
+   ]
+  ],
+  [
+   "Khu công nghiệp, cụm công nghiệp, kho tàng, logistics, bến bãi",
+   [
+    129,
+    106,
+    248
+   ]
+  ],
+  [
+   "Khu vực đô thị công nghiệp, dịch vụ",
+   [
+    217,
+    182,
+    246
+   ]
+  ],
+  [
+   "Khu công nghệ cao, công nghệ số, nghiên cứu, đào tạo, dịch vụ",
+   [
+    117,
+    204,
+    198
+   ]
+  ],
+  [
+   "Khu vực đô thị công nghệ cao, nghiên cứu, đào tạo",
+   [
+    92,
+    178,
+    135
+   ]
+  ],
+  [
+   "Khu vực đô thị sinh thái, công nghệ cao, công nghiệp tiền tiến, y sinh",
+   [
+    0,
+    112,
+    149
+   ]
+  ],
+  [
+   "Khu thể dục thể thao, văn hóa",
+   [
+    0,
+    184,
+    0
+   ]
+  ],
+  [
+   "Khu vực đô thị thể dục thể thao, văn hóa",
+   [
+    0,
+    255,
+    127
+   ]
+  ],
+  [
+   "Khu công viên công cộng, công viên chuyên đề, du lịch, dịch vụ, tôn giáo",
+   [
+    109,
+    221,
+    165
+   ]
+  ],
+  [
+   "Khu phức hợp y tế",
+   [
+    231,
+    0,
+    174
+   ]
+  ],
+  [
+   "Khu đầu mối hạ tầng kỹ thuật",
+   [
+    167,
+    183,
+    208
+   ]
+  ],
+  [
+   "Khu vực cảng",
+   [
+    165,
+    172,
+    226
+   ]
+  ],
+  [
+   "Khu vực di tích tôn giáo",
+   [
+    185,
+    91,
+    1
+   ]
+  ],
+  [
+   "Khu vực cây xanh đô thị tập trung",
+   [
+    92,
+    183,
+    0
+   ]
+  ],
+  [
+   "Khu vực cây xanh, công viên chuyên đề",
+   [
+    28,
+    173,
+    70
+   ]
+  ],
+  [
+   "Khu vực cây xanh chuyên dùng",
+   [
+    0,
+    114,
+    27
+   ]
+  ],
+  [
+   "Khu vực nông nghiệp chưa chuyển chức năng",
+   [
+    169,
+    221,
+    147
+   ]
+  ],
+  [
+   "Khu vực lâm nghiệp",
+   [
+    81,
+    155,
+    58
+   ]
+  ],
+  [
+   "Khu vực an ninh, quốc phòng",
+   [
+    108,
+    132,
+    84
+   ]
+  ],
+  [
+   "Mặt nước",
+   [
+    46,
+    123,
+    177
+   ]
+  ]
+ ],
+ "transitPalette": [
+  {
+   "label": "Đường cao tốc, vành đai",
+   "rgb": [
+    0,
+    184,
+    40
+   ],
+   "note": "dải xanh của ký hiệu; tim đường màu đỏ",
+   "short": "Cao tốc / vành đai"
+  },
+  {
+   "label": "Quốc lộ",
+   "rgb": [
+    248,
+    0,
+    0
+   ],
+   "note": "nét đỏ",
+   "short": "Quốc lộ"
+  },
+  {
+   "label": "Đường tỉnh / đường cấp đô thị",
+   "rgb": [
+    248,
+    0,
+    248
+   ],
+   "note": "chú giải dùng cùng một màu tím cho hai loại",
+   "short": "Tỉnh lộ / đường đô thị"
+  }
+ ]
+}
